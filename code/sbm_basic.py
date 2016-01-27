@@ -25,6 +25,7 @@ import numpy as np
 import numpy.linalg as npl
 import numpy.random as npr
 import pickle as pkl
+import sys
 try:
     from body.mesh.meshviewer import MeshViewer
     from body.mesh.mesh import Mesh
@@ -318,8 +319,75 @@ def sbm_to_scape_mesh(this):
         R, J = cv2.Rodrigues(this.r_abs[part, :])
         T = this.t[part, :]
         Pw[part] = object_to_world(P, R, T)
+	np.set_printoptions(threshold = sys.maxint)
+	print str(part) +' ' + str(len(Pw[part]))+' ' +str(this.part2bodyPoints[part])
         pidx = this.part2bodyPoints[part]
         v[pidx,:] = Pw[part]
 
-    return v, f
+	#my changes start:
+	#print str(part) + ' ' + str(R) +' ' + str(T) #show the rotation and translation of each body part
+	#my changes end:
+    
+    #my changes start:
+    np.set_printoptions(threshold = 1000)
+    print v.shape
+    joints=[]
+#    joints.append(Pw[0][0])
+#    joints.append(Pw[1][0])
+#    joints.append(Pw[2][0])
+#    joints.append(Pw[3][0])
+#    joints.append(Pw[4][0])
+#    joints.append(Pw[5][0])
+#    joints.append(Pw[7][300])
+#    joints.append(Pw[8][0])
+#    joints.append(Pw[9][200])
+#    joints.append(Pw[10][0])
+#    joints.append(Pw[11][0])
+#    joints.append(Pw[12][0])
+#    joints.append(Pw[13][0])
+#    joints.append(Pw[15][0])
+#    joints.append(Pw[16][200])
+#    joints.append(Pw[18][0])
+
+    joints.append(Pw[0][0])
+    joints.append(Pw[1][0])
+    joints.append(Pw[2][0])
+    joints.append(Pw[3][0])
+    joints.append(Pw[4][0])
+    joints.append(Pw[5][0])
+    joints.append(Pw[7][300])
+    joints.append(v[1213])
+    joints.append(Pw[9][200])
+    joints.append(Pw[10][0])
+    joints.append(Pw[11][0])
+    joints.append(Pw[12][0])
+    joints.append(Pw[13][0])
+    joints.append(Pw[15][0])
+    joints.append(Pw[16][200])
+    joints.append(Pw[18][0])
+    print joints
+    skeleton = []
+    skeleton.append([0,2])
+    skeleton.append([0,12])
+    skeleton.append([12,14])
+    skeleton.append([14,3])
+    skeleton.append([3,15])
+    skeleton.append([3,8])
+    skeleton.append([8,10])
+    skeleton.append([10,13])
+    skeleton.append([13,1])
+    skeleton.append([3,6])
+    skeleton.append([6,4])
+    skeleton.append([4,11])
+    skeleton.append([3,7])
+    skeleton.append([7,9])
+    skeleton.append([9,5])
+    # torso
+    skeleton.append([6,8])
+    skeleton.append([14,7])
+    skeleton.append([7,6])
+    #v= np.vstack((v, skeleton))
+    print v.shape
+    #my changes end:
+    return v, f, joints, skeleton
 

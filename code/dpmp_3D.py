@@ -207,7 +207,7 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
         print logB
 
     # Save the result as a single mesh
-    v, f = ba.sbm_to_scape_mesh(d.body)
+    v, f, joints, skeleton = ba.sbm_to_scape_mesh(d.body)
     mesh_data = {'v':v, 'f':f} 
 
     filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '.pkl'
@@ -216,15 +216,21 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
 
     # Save in ply
     from my_mesh.mesh import myMesh
-    m = myMesh(v=v, f=f)
+    m = myMesh(v=v, f=f, e=[])
     filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '.ply'
     m.save_ply(filename)
 
+    # My code starts:
+    #print len(skeleton)
+    m = myMesh(v=joints, f=[], e = skeleton)
+    filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '_skeleton.ply'
+    m.save_ply(filename)
+    # My code ends:
 
 
 if __name__ == '__main__':
 
-    nParticles = 30
+    nParticles = 3
     nSteps = 60
     isTest = True
 
@@ -232,10 +238,12 @@ if __name__ == '__main__':
             'l_alphaNormal': 1.0, 'l_alphaLoose': 0.1, 'l_alphaVeryLoose': 0.001, 's_alphaNormal': 0.25, 's_alphaLoose':0.001, 's_alphaTight':0.5, 'alphaRef':0.1}
 
     code = '0_'
-    faustId = '033' 
+    faustId = ['033', '034', '035', '036', '037']
 
-    tic = time.time()
-    run(nParticles, nSteps, faustId, isTest, params, code, 0)
-    toc = time.time()
-    print 'Execution time: ' + str(toc-tic)
+    for i in range(0, 3):
+    	tic = time.time()
+    	run(nParticles, nSteps, faustId[i], isTest, params, code, 0)
+    	toc = time.time()
+
+    	print 'Execution time: ' + str(toc-tic)
 

@@ -10,7 +10,7 @@ class myMesh(object):
         v: Vx3 array of vertices
         f: Fx3 array of faces
     """
-    def __init__(self, v=None, f=None, filename=None):
+    def __init__(self, v=None, f=None, e=None, filename=None):
         self.v = None
         self.f = None
 
@@ -18,6 +18,9 @@ class myMesh(object):
             self.v = np.array(v, dtype=np.float64)
         if f is not None:
             self.f = np.require(f, dtype=np.uint32)
+
+	if e is not None:
+	    self.e = np.require(e, dtype=np.uint32)
 
         if filename is not None:
             self.load_from_ply(filename)
@@ -46,13 +49,18 @@ class myMesh(object):
 
     def save_ply(self, filename):
         vertex = np.array([tuple(i) for i in self.v], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
-        face = np.array([(tuple(i), 255, 255, 255) for i in self.f] , 
+        face = np.array([(tuple(i), 0, 100, 255) for i in self.f] , 
             dtype=[('vertex_indices', 'i4', (3,)),
+            ('red', 'u1'), ('green', 'u1'),
+            ('blue', 'u1')])
+	edge = np.array([(tuple(i)[0], tuple(i)[1], 255, 255, 255) for i in self.e] , 
+            dtype=[('vertex1', 'i4'), ('vertex2', 'i4'),
             ('red', 'u1'), ('green', 'u1'),
             ('blue', 'u1')])
         el = PlyElement.describe(vertex, 'vertex')
         el2 = PlyElement.describe(face, 'face')
-        plydata = PlyData([el, el2])
+	el3 = PlyElement.describe(edge, 'edge')
+        plydata = PlyData([el, el2, el3])
         plydata.write(filename)
 
 
