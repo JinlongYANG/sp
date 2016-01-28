@@ -63,8 +63,7 @@ def show_all_particles(this, faustId, nParticles, s):
     time.sleep(4)
     mv.save_snapshot('particles_'+faustId+'_'+str(s)+'.png', blocking=True)
 
-def run(nParticles, nSteps, faustId, isTest, params, code, seed):
-
+def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastResult=None):
     np.random.seed(seed)
     nBtorso = 12 
     nB =  5 
@@ -79,6 +78,7 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
 
     b = sbm.Sbm()
     b.gender = gender
+    
     d = dpmp.Dpmp(b, nBtorso, nB, nBshape, nParticles, 0, sbmModel)
 
     d.body.fixedShape = False
@@ -143,7 +143,6 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
         d.likelihoodAlpha[:] =  l_alphaNormal 
         d.stitchAlpha = s_alphaNormal*np.ones((d.nNodes, d.nNodes))
 
-
     d.nSteps = nSteps 
     for s in range(nSteps):
         d.step = s
@@ -181,7 +180,8 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
                 d.use_map_particle_for_rnd_walk = True
 
             tic = time.time()
-            logB[s] = run_DPMP_step(d, s)
+
+            logB[s] = run_DPMP_step(d, s, frameId, lastResult)
             toc = time.time() - tic
 
             if d.display ==4: 
@@ -227,10 +227,12 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed):
     m.save_ply(filename)
     # My code ends:
 
+    return d
+
 
 if __name__ == '__main__':
 
-    nParticles = 3
+    nParticles = 30
     nSteps = 60
     isTest = True
 
@@ -238,11 +240,20 @@ if __name__ == '__main__':
             'l_alphaNormal': 1.0, 'l_alphaLoose': 0.1, 'l_alphaVeryLoose': 0.001, 's_alphaNormal': 0.25, 's_alphaLoose':0.001, 's_alphaTight':0.5, 'alphaRef':0.1}
 
     code = '0_'
-    faustId = ['033', '034', '035', '036', '037']
+    faustId = ['033', '034', '035', '036', '037']	
 
-    for i in range(0, 3):
+    for frameId in range(0, 3):
     	tic = time.time()
-    	run(nParticles, nSteps, faustId[i], isTest, params, code, 0)
+	if not frameId:
+    		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId)
+	else:
+		nParticles = 3
+		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId, lastResult)
+	#print ' ****************************** '
+    	#print len(lastResult)
+	#print lastResult[0]['x'].shape
+	#print lastResult[0]['L'].shape
+	#print lastResult[0]['value'].shape
     	toc = time.time()
 
     	print 'Execution time: ' + str(toc-tic)

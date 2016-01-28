@@ -111,4 +111,69 @@ def init_messages(this):
             t = this.Q[i,j]
             this.m[t] = {'value':np.ones((this.nParticles[j])), 'x': this.b[j]['x']}
 
- 
+
+def init_based_on_last_frame(this, lastResult):
+    this.schedule, this.Q = init_schedule(this, this.A, this.nEdges)
+    # Initialize the node data (particles, likelihood and max marginal value)
+    this.b = [None]*this.nNodes
+    this.new_b = [None]*this.nNodes
+
+    for i in this.nodeIdx:
+       print ' ###*** nParticles ' +str(i) + ': ' + str(this.nParticles[i])
+       this.b[i] = {'x':lastResult.new_b[i]['x'][:,:this.nParticles[i]], 'L':np.zeros((this.nParticles[i])), 'value':np.zeros((this.nParticles[i]))}
+       print ' *** x: ' + str(this.b[i]['x'].shape)
+       print ' *** L: ' + str(this.b[i]['L'].shape)
+       print ' *** v: ' + str(this.b[i]['value'].shape)
+       this.new_b[i] = {'x':lastResult.new_b[i]['x'][:,:this.nParticles[i]], 'L':np.zeros((this.nParticles[i])), 'value':np.zeros((this.nParticles[i]))}
+
+    # Particles initialization
+    init_particles_based_on_last_frame(this, lastResult)
+
+    # Beliefs initialization
+    for i in this.nodeIdx:
+       this.b[i]['L'] = particles.compute_likelihood(this, i, this.b[i]['x'])
+       this.b[i]['value'] = this.b[i]['L']
+
+    # Messages initialization
+    init_messages(this)
+
+    return
+
+def init_particles_based_on_last_frame(this, lastResult):
+# Initialize the particles on each node
+
+    maxNp = np.max(this.nParticles)
+    if this.display > 3:
+         ms = [Mesh(v=this.scanMesh.v, f=this.scanMesh.f).set_vertex_colors('SeaGreen')]
+
+    # Number of particles on each node
+    n = np.zeros((this.nNodes))
+
+    k = 0
+    for p in range(int(maxNp)):
+        Pw, r_abs, t, Zp, Zs = get_sample_from_model.get_sample(lastResult.body, lastResult.nB[lastResult.torso], lastResult.nB, lastResult.nBshape[lastResult.torso], add_global_rotation=lastResult.init_with_global_rotation, init_torso_rotation=lastResult.init_torso_rotation)
+
+        this.body.r_abs = r_abs
+        t = t + lastResult.init_torso_location 
+        this.body.t = t
+        for i in this.nodeIdx:
+            this.body.Zs[i] = Zs
+        this.body.Zp = Zp
+
+        for i in this.nodeIdx:
+            if n[i] < this.nParticles[i]:
+                this.b[i]['x'][:,p] = particles.get_from_sbm_with_init_location_noise(lastResult, lastResult.body, i)
+                n[i] = n[i]+1
+
+        if this.display > 4:
+            partSet = lastResult.body.partSet
+            P = ba.get_sbm_points_per_part(lastResult.body)
+            for part in partSet:
+                ms.append(Mesh(v=P[part], f=lastResult.body.partFaces[part]).set_vertex_colors(lastResult.body.colors[part]))
+
+    if this.display > 4:
+         mv = MeshViewer()
+         mv.set_static_meshes(ms)
+
+
+

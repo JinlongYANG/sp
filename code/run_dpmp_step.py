@@ -32,7 +32,7 @@ import set_me_as_solution
 import time
 from update_all_messages import compute_model_log_posterior
 
-def run_DPMP_step(dpmp, s):
+def run_DPMP_step(dpmp, s, frameId, lastResult = None):
     """
     Run a step of diverse particle max product. 
     @params: dpmp Is an object of class Dpmp
@@ -42,10 +42,14 @@ def run_DPMP_step(dpmp, s):
     if dpmp.verbose >= 1:
         print 'PBP Iter ' + str(s)
 
-    if s == 0:
+    if s == 0 and frameId == 0:
         # Only do the initialization and run BP
         initBP.init(dpmp)
         update_all_messages.update(dpmp)
+
+    elif s == 0:
+	initBP.init_based_on_last_frame(dpmp, lastResult)
+	update_all_messages.update(dpmp)
 
     else:
         # In each step we perform augment + BP + select + BP

@@ -320,7 +320,7 @@ def sbm_to_scape_mesh(this):
         T = this.t[part, :]
         Pw[part] = object_to_world(P, R, T)
 	np.set_printoptions(threshold = sys.maxint)
-	print str(part) +' ' + str(len(Pw[part]))+' ' +str(this.part2bodyPoints[part])
+	print str(part) +' ' + str(len(Pw[part]))#+' ' +str(this.part2bodyPoints[part])
         pidx = this.part2bodyPoints[part]
         v[pidx,:] = Pw[part]
 
@@ -330,7 +330,7 @@ def sbm_to_scape_mesh(this):
     
     #my changes start:
     np.set_printoptions(threshold = 1000)
-    print v.shape
+    #print v.shape
     joints=[]
 #    joints.append(Pw[0][0])
 #    joints.append(Pw[1][0])
@@ -365,7 +365,7 @@ def sbm_to_scape_mesh(this):
     joints.append(Pw[15][0])
     joints.append(Pw[16][200])
     joints.append(Pw[18][0])
-    print joints
+    #print joints
     skeleton = []
     skeleton.append([0,2])
     skeleton.append([0,12])
@@ -387,7 +387,7 @@ def sbm_to_scape_mesh(this):
     skeleton.append([14,7])
     skeleton.append([7,6])
     #v= np.vstack((v, skeleton))
-    print v.shape
+    #print v.shape
     #my changes end:
     return v, f, joints, skeleton
 
