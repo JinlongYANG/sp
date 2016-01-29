@@ -306,7 +306,7 @@ def show_me(this, dbstop=False, mesh=None, scan=None, filename=None, Pwo=None, c
     show_mesh(this, Pw, dbstop=dbstop, mesh=mesh, scan=scan, filename=filename, Pwo=Pwo)
 
 
-def sbm_to_scape_mesh(this):
+def sbm_to_scape_mesh(this, globalTranslation = np.zeros((3))):
 
     # Load the template, so we have the faces
     data = this.load_sample(this.template_filename + '_' + this.gender + '.pkl')
@@ -317,10 +317,10 @@ def sbm_to_scape_mesh(this):
     for part in this.partSet:
         P = get_part_mesh(this, part, this.Zp[part], this.Zs[part])
         R, J = cv2.Rodrigues(this.r_abs[part, :])
-        T = this.t[part, :]
+        T = this.t[part, :]+globalTranslation
         Pw[part] = object_to_world(P, R, T)
 	np.set_printoptions(threshold = sys.maxint)
-	print str(part) +' ' + str(len(Pw[part]))#+' ' +str(this.part2bodyPoints[part])
+	#print str(part) +' ' + str(len(Pw[part]))#+' ' +str(this.part2bodyPoints[part])
         pidx = this.part2bodyPoints[part]
         v[pidx,:] = Pw[part]
 
@@ -349,22 +349,22 @@ def sbm_to_scape_mesh(this):
 #    joints.append(Pw[16][200])
 #    joints.append(Pw[18][0])
 
-    joints.append(Pw[0][0])
-    joints.append(Pw[1][0])
-    joints.append(Pw[2][0])
-    joints.append(Pw[3][0])
-    joints.append(Pw[4][0])
-    joints.append(Pw[5][0])
-    joints.append(Pw[7][300])
+    joints.append(v[4533])
+    joints.append(v[10701])
+    joints.append(v[5783])
+    joints.append(v[7113])
+    joints.append(v[8194])
+    joints.append(v[5345])
+    joints.append(v[333])
+    joints.append(v[9371])
     joints.append(v[1213])
-    joints.append(Pw[9][200])
-    joints.append(Pw[10][0])
-    joints.append(Pw[11][0])
-    joints.append(Pw[12][0])
-    joints.append(Pw[13][0])
-    joints.append(Pw[15][0])
-    joints.append(Pw[16][200])
-    joints.append(Pw[18][0])
+    joints.append(v[10346])
+    joints.append(v[1860])
+    joints.append(v[8084])
+    joints.append(v[8849])
+    joints.append(v[8059])
+    joints.append(v[3313])
+    joints.append(v[1657])
     #print joints
     skeleton = []
     skeleton.append([0,2])
@@ -382,10 +382,7 @@ def sbm_to_scape_mesh(this):
     skeleton.append([3,7])
     skeleton.append([7,9])
     skeleton.append([9,5])
-    # torso
-    skeleton.append([6,8])
-    skeleton.append([14,7])
-    skeleton.append([7,6])
+
     #v= np.vstack((v, skeleton))
     #print v.shape
     #my changes end:

@@ -119,11 +119,11 @@ def init_based_on_last_frame(this, lastResult):
     this.new_b = [None]*this.nNodes
 
     for i in this.nodeIdx:
-       print ' ###*** nParticles ' +str(i) + ': ' + str(this.nParticles[i])
+       #print ' ###*** nParticles ' +str(i) + ': ' + str(this.nParticles[i])
        this.b[i] = {'x':lastResult.new_b[i]['x'][:,:this.nParticles[i]], 'L':np.zeros((this.nParticles[i])), 'value':np.zeros((this.nParticles[i]))}
-       print ' *** x: ' + str(this.b[i]['x'].shape)
-       print ' *** L: ' + str(this.b[i]['L'].shape)
-       print ' *** v: ' + str(this.b[i]['value'].shape)
+       #print ' *** x: ' + str(this.b[i]['x'].shape)
+       #print ' *** L: ' + str(this.b[i]['L'].shape)
+       #print ' *** v: ' + str(this.b[i]['value'].shape)
        this.new_b[i] = {'x':lastResult.new_b[i]['x'][:,:this.nParticles[i]], 'L':np.zeros((this.nParticles[i])), 'value':np.zeros((this.nParticles[i]))}
 
     # Particles initialization

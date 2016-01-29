@@ -188,10 +188,10 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
                 show_all_particles(d, faustId, nParticles, s)
 
             if d.verbose > 0:
-                print str(s) + ' time to run DPMP step: ' + str(toc)
+                #print str(s) + ' time to run DPMP step: ' + str(toc)
                 logPos, logL, logP = compute_model_log_posterior(d)
-                print 'iter ' + str(s) + ' logPos= ' + str(logPos) + ' logL= ' + str(logL) + ' logP= ' + str(logP) 
-            print str(s) + ': ' + str(logB[s])
+                #print 'iter ' + str(s) + ' logPos= ' + str(logPos) + ' logL= ' + str(logL) + ' logP= ' + str(logP) 
+            #print str(s) + ': ' + str(logB[s])
             filename = 'faustID_' + faustId + '_' + str(seed) + '_' + str(s) + '.png'
             if d.display > 0:
                 ba.show_me(d.body, scan=d.scanMesh, filename='dpmp_step_'+faustId + '_' +str(s)+'.png')
@@ -202,12 +202,12 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
         filename = code + 'faustID_' + faustId + '_' + str(seed) + '.png'
         ba.show_me(d.body, dbstop=False, scan=d.scanMesh, filename=filename)
 
-    if d.verbose > 0:
-        print 'negative energy at each iteration:'
-        print logB
+    #if d.verbose > 0:
+        #print 'negative energy at each iteration:'
+        #print logB
 
     # Save the result as a single mesh
-    v, f, joints, skeleton = ba.sbm_to_scape_mesh(d.body)
+    v, f, joints, skeleton = ba.sbm_to_scape_mesh(d.body, d.scanCenter)
     mesh_data = {'v':v, 'f':f} 
 
     filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '.pkl'
@@ -232,7 +232,7 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
 
 if __name__ == '__main__':
 
-    nParticles = 30
+    nParticles = 3
     nSteps = 60
     isTest = True
 
@@ -246,8 +246,10 @@ if __name__ == '__main__':
     	tic = time.time()
 	if not frameId:
     		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId)
+		print '#########################'
+		print lastResult.init_torso_location 
 	else:
-		nParticles = 3
+		nParticles = 30
 		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId, lastResult)
 	#print ' ****************************** '
     	#print len(lastResult)
