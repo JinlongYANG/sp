@@ -34,6 +34,7 @@ import time
 import pickle as pkl
 import particles
 import initBP
+import sys
 try:
     from body.mesh.meshviewer import MeshViewer
     from body.mesh.mesh import Mesh
@@ -63,7 +64,7 @@ def show_all_particles(this, faustId, nParticles, s):
     time.sleep(4)
     mv.save_snapshot('particles_'+faustId+'_'+str(s)+'.png', blocking=True)
 
-def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastResult=None):
+def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, frameId, genderArgv, lastResult=None):
     np.random.seed(seed)
     nBtorso = 12 
     nB =  5 
@@ -71,8 +72,7 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
 
     gender = 'male'
     sbmModel = "model_ho_male_5_reduced"
-    femaleIdxs = range(20,40)+ range(80,140)+ range(160,180)
-    if isTest and (int(faustId) in femaleIdxs):
+    if genderArgv == 'female':
         gender = 'female'
         sbmModel = "model_ho_female_5_reduced"
 
@@ -184,23 +184,23 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
             logB[s] = run_DPMP_step(d, s, frameId, lastResult)
             toc = time.time() - tic
 
-            if d.display ==4: 
-                show_all_particles(d, faustId, nParticles, s)
+            #if d.display ==4: 
+                #show_all_particles(d, faustId, nParticles, s)
 
             if d.verbose > 0:
                 #print str(s) + ' time to run DPMP step: ' + str(toc)
                 logPos, logL, logP = compute_model_log_posterior(d)
                 #print 'iter ' + str(s) + ' logPos= ' + str(logPos) + ' logL= ' + str(logL) + ' logP= ' + str(logP) 
             #print str(s) + ': ' + str(logB[s])
-            filename = 'faustID_' + faustId + '_' + str(seed) + '_' + str(s) + '.png'
-            if d.display > 0:
-                ba.show_me(d.body, scan=d.scanMesh, filename='dpmp_step_'+faustId + '_' +str(s)+'.png')
+            #filename = 'faustID_' + faustId + '_' + str(seed) + '_' + str(s) + '.png'
+            #if d.display > 0:
+                #ba.show_me(d.body, scan=d.scanMesh, filename='dpmp_step_'+faustId + '_' +str(s)+'.png')
 
 
     # Show the solution
-    if d.display > 0:
-        filename = code + 'faustID_' + faustId + '_' + str(seed) + '.png'
-        ba.show_me(d.body, dbstop=False, scan=d.scanMesh, filename=filename)
+    #if d.display > 0:
+        #filename = code + 'faustID_' + faustId + '_' + str(seed) + '.png'
+        #ba.show_me(d.body, dbstop=False, scan=d.scanMesh, filename=filename)
 
     #if d.verbose > 0:
         #print 'negative energy at each iteration:'
@@ -210,20 +210,20 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
     v, f, joints, skeleton = ba.sbm_to_scape_mesh(d.body, d.scanCenter)
     mesh_data = {'v':v, 'f':f} 
 
-    filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '.pkl'
+    filename = outputPath+'.pkl'
     dpmp.save_dpmp(d, logB, params, mesh_data, filename)
     dpmp.show_result(filename)
 
     # Save in ply
     from my_mesh.mesh import myMesh
     m = myMesh(v=v, f=f, e=[])
-    filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '.ply'
+    filename = outputPath + '.ply'
     m.save_ply(filename)
 
     # My code starts:
     #print len(skeleton)
     m = myMesh(v=joints, f=[], e = skeleton)
-    filename = '../results/' + code + 'faustID_' + faustId + '_' + str(seed) + '_skeleton.ply'
+    filename = outputPath +'_skeleton.ply'
     m.save_ply(filename)
     # My code ends:
 
@@ -232,25 +232,40 @@ def run(nParticles, nSteps, faustId, isTest, params, code, seed, frameId, lastRe
 
 if __name__ == '__main__':
 
-    nParticles = 3
+    #arguments:
+    # dpmp_3D.py     inputFilePath	outputFilePath	   gender	   particleNumber
+    print 'Number of arguments:', len(sys.argv), 'arguments.'
+    print 'Argument List:', str(sys.argv)
+
+    nParticles = 60
     nSteps = 60
     isTest = True
-
+    frames = 3
+    gender = 'female'
+	
     params = {'genericSigma': 0.001, 'rSigma':0.3, 'tSigma':0.1, 'posePCAsigmaScale':0.1, 'shapePCAsigmaScale':0.5, 'robustOffset':0.001, 'robustGamma':0.45, 
             'l_alphaNormal': 1.0, 'l_alphaLoose': 0.1, 'l_alphaVeryLoose': 0.001, 's_alphaNormal': 0.25, 's_alphaLoose':0.001, 's_alphaTight':0.5, 'alphaRef':0.1}
 
     code = '0_'
-    faustId = ['033', '034', '035', '036', '037']	
+    inputFilePath = ['../MPI-FAUST/test/scans/test_scan_033.ply', '../MPI-FAUST/test/scans/test_scan_034.ply', '../MPI-FAUST/test/scans/test_scan_035.ply', '../MPI-FAUST/test/scans/test_scan_036.ply', '../MPI-FAUST/test/scans/test_scan_037.ply']
+    outputFilePath = ['../results/test_scan_033', '../results/test_scan_034', '../results/test_scan_035', '../results/test_scan_036', '../results/test_scan_037']
 
-    for frameId in range(0, 3):
+    if len(sys.argv) == 5:
+	nParticles = int(sys.argv[4])
+	frames = 1
+        inputFilePath[0] = sys.argv[1]
+ 	outputFilePath[0] = sys.argv[2]
+	isTest = False
+      	gender = sys.argv[3]
+	
+
+    for frameId in range(0, frames):
     	tic = time.time()
 	if not frameId:
-    		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId)
-		print '#########################'
-		print lastResult.init_torso_location 
+    		lastResult = run(nParticles, nSteps, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender)
 	else:
 		nParticles = 30
-		lastResult = run(nParticles, nSteps, faustId[frameId], isTest, params, code, 0, frameId, lastResult)
+		lastResult = run(nParticles, nSteps, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender, lastResult)
 	#print ' ****************************** '
     	#print len(lastResult)
 	#print lastResult[0]['x'].shape

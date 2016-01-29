@@ -33,17 +33,15 @@ from my_mesh.mesh import myMesh
 
 import cPickle
 
-def load_FAUST_scan(dpmp, id, isTest):
+def load_FAUST_scan(dpmp, path, isTest):
     """
     Load a scan from the Faust dataset
     """
 
     if isTest:
-        FaustDir = '../MPI-FAUST/test/scans/'
-        filename = FaustDir + 'test_scan_' + id + '.ply'
+        filename = path
     else:
-        FaustDir = '../MPI-FAUST/training/scans/'
-        filename = FaustDir + 'tr_scan_' + id + '.ply'
+        filename = path
 
     print 'loading ' + filename    
     mym = myMesh(filename=filename)
