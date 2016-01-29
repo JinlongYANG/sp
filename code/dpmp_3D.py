@@ -64,7 +64,7 @@ def show_all_particles(this, faustId, nParticles, s):
     time.sleep(4)
     mv.save_snapshot('particles_'+faustId+'_'+str(s)+'.png', blocking=True)
 
-def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, frameId, genderArgv, lastResult=None):
+def run(nParticles, nSteps, basePath, faustId, outputPath, isTest, params, code, seed, frameId, genderArgv, lastResult=None):
     np.random.seed(seed)
     nBtorso = 12 
     nB =  5 
@@ -76,7 +76,7 @@ def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, fra
         gender = 'female'
         sbmModel = "model_ho_female_5_reduced"
 
-    b = sbm.Sbm()
+    b = sbm.Sbm(basePath)
     b.gender = gender
     
     d = dpmp.Dpmp(b, nBtorso, nB, nBshape, nParticles, 0, sbmModel)
@@ -116,7 +116,7 @@ def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, fra
         greedyStart = nSteps+1
 
     # Load one example to use as test data
-    load_mesh.load_FAUST_scan(d, faustId, isTest)
+    load_mesh.load_FAUST_scan(d, basePath+faustId, isTest)
 
     # Inference
     lower_parts = np.array([2, 0, 5, 10, 12, 4, 1, 15])
@@ -210,22 +210,26 @@ def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, fra
     v, f, joints, skeleton = ba.sbm_to_scape_mesh(d.body, d.scanCenter)
     mesh_data = {'v':v, 'f':f} 
 
-    filename = outputPath+'.pkl'
+    filename = basePath+outputPath+'.pkl'
     dpmp.save_dpmp(d, logB, params, mesh_data, filename)
     dpmp.show_result(filename)
 
     # Save in ply
     from my_mesh.mesh import myMesh
     m = myMesh(v=v, f=f, e=[])
-    filename = outputPath + '.ply'
+    filename = basePath+outputPath + '.ply'
     m.save_ply(filename)
 
     # My code starts:
     #print len(skeleton)
     m = myMesh(v=joints, f=[], e = skeleton)
-    filename = outputPath +'_skeleton.ply'
+    filename = basePath+outputPath +'_skeleton.ply'
     m.save_ply(filename)
     # My code ends:
+
+    #save landMark file
+    filename = basePath+outputPath+'.lnd'
+    m.save_lnd(filename)
 
     return d
 
@@ -233,11 +237,11 @@ def run(nParticles, nSteps, faustId, outputPath, isTest, params, code, seed, fra
 if __name__ == '__main__':
 
     #arguments:
-    # dpmp_3D.py     inputFilePath	outputFilePath	   gender	   particleNumber
+    # dpmp_3D.py     basePath   inputFilePath	outputFilePath	   gender	   particleNumber
     print 'Number of arguments:', len(sys.argv), 'arguments.'
     print 'Argument List:', str(sys.argv)
 
-    nParticles = 60
+    nParticles = 3
     nSteps = 60
     isTest = True
     frames = 3
@@ -247,25 +251,27 @@ if __name__ == '__main__':
             'l_alphaNormal': 1.0, 'l_alphaLoose': 0.1, 'l_alphaVeryLoose': 0.001, 's_alphaNormal': 0.25, 's_alphaLoose':0.001, 's_alphaTight':0.5, 'alphaRef':0.1}
 
     code = '0_'
-    inputFilePath = ['../MPI-FAUST/test/scans/test_scan_033.ply', '../MPI-FAUST/test/scans/test_scan_034.ply', '../MPI-FAUST/test/scans/test_scan_035.ply', '../MPI-FAUST/test/scans/test_scan_036.ply', '../MPI-FAUST/test/scans/test_scan_037.ply']
-    outputFilePath = ['../results/test_scan_033', '../results/test_scan_034', '../results/test_scan_035', '../results/test_scan_036', '../results/test_scan_037']
+    basePath = '/media/jinyang/DATAPART1/StichPuppetCode/sp/'
+    inputFilePath = ['MPI-FAUST/test/scans/test_scan_033.ply', 'MPI-FAUST/test/scans/test_scan_034.ply', 'MPI-FAUST/test/scans/test_scan_035.ply', 'MPI-FAUST/test/scans/test_scan_036.ply', 'MPI-FAUST/test/scans/test_scan_037.ply']
+    outputFilePath = ['results/test_scan_033', 'results/test_scan_034', 'results/test_scan_035', 'results/test_scan_036', 'results/test_scan_037']
 
-    if len(sys.argv) == 5:
-	nParticles = int(sys.argv[4])
+    if len(sys.argv) == 6:
+	nParticles = int(sys.argv[5])
 	frames = 1
-        inputFilePath[0] = sys.argv[1]
- 	outputFilePath[0] = sys.argv[2]
+        inputFilePath[0] = sys.argv[2]
+ 	outputFilePath[0] = sys.argv[3]
 	isTest = False
-      	gender = sys.argv[3]
+      	gender = sys.argv[4]
+        basePath = sys.argv[1]
 	
 
     for frameId in range(0, frames):
     	tic = time.time()
 	if not frameId:
-    		lastResult = run(nParticles, nSteps, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender)
+    		lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender)
 	else:
 		nParticles = 30
-		lastResult = run(nParticles, nSteps, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender, lastResult)
+		lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender, lastResult)
 	#print ' ****************************** '
     	#print len(lastResult)
 	#print lastResult[0]['x'].shape

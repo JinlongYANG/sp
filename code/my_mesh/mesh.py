@@ -122,3 +122,29 @@ class myMesh(object):
 
         return self.vn
 
+    def save_lnd(self, filename):
+	f = open(filename, 'w')
+	f.write('SUBJECT_ID = vstemplate.ply\n')
+	f.write('SCAN_TYPE  = NO TYPE\n')
+	f.write('STUDY_NAME = * * *  NO STUDY  * * *\n')
+	f.write('LAND_STUDY = New Study\n')
+	f.write('STD_LAND = 0\n')
+	f.write('AUX_LAND = 14\n')
+	f.write('STANDARD =\n')
+	f.write('AUX =\n')
+	jointList = ['SRellion','Rt. Acromion', 'Rt. Olecranon', 'Rt. Ulnar Styloid', 'Lt. Acromion', 'Lt. Olecranon', 'Lt. Ulnar Styloid', 'Rt. Knee Crease', 'Rt. Calcaneous, Post.', 'Rt. Digit II', 'Lt. Knee Crease', 'Lt. Calcaneous, Post.', 'Lt. Digit II', 'Crotch']
+	
+	for i in range(0,14):
+		f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[i][0], 1000*self.v[i][1], 1000*self.v[i][2], jointList[i]))
+
+	f.write('END =')
+	f.close()
+
+
+
+
+
+
+
+
+

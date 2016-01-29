@@ -50,7 +50,7 @@ class Sbm(object):
     poseDefModelNeighbors = []
     poseDefModelA2B = []
 
-    def __init__(self):
+    def __init__(self, baseDir):
         # The parts should be orderd from root to leaves
 
         self.partSet = [3,18,7,8,9,16,11,13,4,10,15,0,1,2,5,12]
@@ -66,8 +66,8 @@ class Sbm(object):
         self.template_filename = 'mptem_ho'
         self.pose_filename = 'scmp_ho'
 
-        self.data_dir = '../training/'
-        self.model_dir = '../models/'
+        self.data_dir = baseDir + '/training/'
+        self.model_dir = baseDir + '/models/'
 
         self.nCMU = 600
         self.nPairs = len(self.pairs)
