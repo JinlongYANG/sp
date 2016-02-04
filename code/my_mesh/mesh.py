@@ -10,7 +10,7 @@ class myMesh(object):
         v: Vx3 array of vertices
         f: Fx3 array of faces
     """
-    def __init__(self, v=None, f=None, e=None, filename=None):
+    def __init__(self, v=None, f=None, e=None, filename=None, rotationFlag = None):
         self.v = None
         self.f = None
 
@@ -23,7 +23,7 @@ class myMesh(object):
 	    self.e = np.require(e, dtype=np.uint32)
 
         if filename is not None:
-            self.load_from_ply(filename)
+            self.load_from_ply(filename, rotationFlag)
 
         self.vn = None
         self.fn = None
@@ -31,15 +31,20 @@ class myMesh(object):
         self.v_indexed_by_faces = None
         self.vc = np.array([1.0, 0.0, 0.0])
 
-    def load_from_ply(self, filename):
+    def load_from_ply(self, filename, rotationFlag):
 
         plydata = PlyData.read(filename)
         self.plydata = plydata
 
-        self.f = np.vstack(plydata['face'].data['vertex_indices'])
-        x = plydata['vertex'].data['x']
-        y = plydata['vertex'].data['y']
-        z = plydata['vertex'].data['z']
+        self.f = np.vstack(plydata['face'].data['vertex_indices'])	
+	if rotationFlag is not None:
+        	x = -plydata['vertex'].data['z']
+        	y = plydata['vertex'].data['x']
+        	z = -plydata['vertex'].data['y']
+	else:
+        	x = plydata['vertex'].data['x']
+        	y = plydata['vertex'].data['y']
+        	z = plydata['vertex'].data['z']
         self.v = np.zeros([x.size, 3])
         self.v[:,0] = x
         self.v[:,1] = y
@@ -134,9 +139,28 @@ class myMesh(object):
 	f.write('AUX =\n')
 	jointList = ['SRellion','Rt. Acromion', 'Rt. Olecranon', 'Rt. Ulnar Styloid', 'Lt. Acromion', 'Lt. Olecranon', 'Lt. Ulnar Styloid', 'Rt. Knee Crease', 'Rt. Calcaneous, Post.', 'Rt. Digit II', 'Lt. Knee Crease', 'Lt. Calcaneous, Post.', 'Lt. Digit II', 'Crotch']
 	
-	for i in range(0,14):
-		f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[i][0], 1000*self.v[i][1], 1000*self.v[i][2], jointList[i]))
+	#for i in range(0,14):
+		#f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[i][0], 1000*self.v[i][1], 1000*self.v[i][2], jointList[i]))
 
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[15][0], 1000*self.v[15][1], 1000*self.v[15][2], jointList[0])) #forehead
+
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[8][0], 1000*self.v[8][1], 1000*self.v[8][2], jointList[1])) #right shoulder
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[10][0], 1000*self.v[10][1], 1000*self.v[10][2], jointList[2])) #right elbow
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[13][0], 1000*self.v[13][1], 1000*self.v[13][2], jointList[3])) #right wrist
+
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[14][0], 1000*self.v[14][1], 1000*self.v[14][2], jointList[4])) #left shoulder
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[12][0], 1000*self.v[12][1], 1000*self.v[12][2], jointList[5])) #left elbow
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[0][0], 1000*self.v[0][1], 1000*self.v[0][2], jointList[6])) #left wrist
+
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[6][0], 1000*self.v[6][1], 1000*self.v[6][2], jointList[7])) #right knee
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[4][0], 1000*self.v[4][1], 1000*self.v[4][2], jointList[8])) #right heel
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[11][0], 1000*self.v[11][1], 1000*self.v[11][2], jointList[9])) #right foot
+
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[7][0], 1000*self.v[7][1], 1000*self.v[7][2], jointList[10])) #left knee
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[9][0], 1000*self.v[9][1], 1000*self.v[9][2], jointList[11])) #left heel
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[5][0], 1000*self.v[5][1], 1000*self.v[5][2], jointList[12])) #left foot
+
+	f.write('\t0 \t0 \t0 \t0 \t%.3f \t%.3f \t%.3f %s\n'%(1000*self.v[3][0], 1000*self.v[3][1], 1000*self.v[3][2], jointList[13])) #belly
 	f.write('END =')
 	f.close()
 

@@ -35,6 +35,8 @@ import pickle as pkl
 import particles
 import initBP
 import sys
+import os
+import string
 try:
     from body.mesh.meshviewer import MeshViewer
     from body.mesh.mesh import Mesh
@@ -237,7 +239,10 @@ def run(nParticles, nSteps, basePath, faustId, outputPath, isTest, params, code,
 if __name__ == '__main__':
 
     #arguments:
+#For single file processing:
     # dpmp_3D.py     basePath   inputFilePath	outputFilePath	   gender	   particleNumber
+#For the whole sequence in one directory:
+    # dpmp_3D.py     basePath   inputDirPath	outputDirPath	   gender	   particleNumber	laterParticleNumer
     print 'Number of arguments:', len(sys.argv), 'arguments.'
     print 'Argument List:', str(sys.argv)
 
@@ -252,10 +257,11 @@ if __name__ == '__main__':
 
     code = '0_'
     basePath = '/media/jinyang/DATAPART1/StichPuppetCode/sp/'
-    inputFilePath = ['MPI-FAUST/test/scans/test_scan_033.ply', 'MPI-FAUST/test/scans/test_scan_034.ply', 'MPI-FAUST/test/scans/test_scan_035.ply', 'MPI-FAUST/test/scans/test_scan_036.ply', 'MPI-FAUST/test/scans/test_scan_037.ply']
-    outputFilePath = ['results/test_scan_033.lnd', 'results/test_scan_034.lnd', 'results/test_scan_035.lnd', 'results/test_scan_036.lnd', 'results/test_scan_037.lnd']
+    inputFilePath = ['MPI-FAUST/test/scans/test_scan_033.ply', 'MPI-FAUST/test/scans/test_scan_034.ply']
+    outputFilePath = ['results/test_scan_033.lnd', 'results/test_scan_034.lnd']
 
-    if len(sys.argv) == 6:
+
+    if len(sys.argv) == 7:
 	nParticles = int(sys.argv[5])
 	frames = 1
         inputFilePath[0] = sys.argv[2]
@@ -263,21 +269,54 @@ if __name__ == '__main__':
 	isTest = False
       	gender = sys.argv[4]
         basePath = sys.argv[1]
+	absoluteInputDirPath = basePath+inputFilePath[0]
+	frameId = 0
+
+	for inputFile in os.listdir(absoluteInputDirPath):
+    		tic = time.time()
+		if inputFile.endswith(".ply"):
+			print(inputFile)
+			print(inputFilePath[0]+'/'+inputFile)
+			print(outputFilePath[0]+'/'+string.replace(inputFile, 'ply', ''))
+		if not frameId:
+    			lastResult = run(nParticles, nSteps, basePath, inputFilePath[0]+'/'+inputFile, outputFilePath[0]+'/'+string.replace(inputFile, 'ply', ''), isTest, params, code, 0, frameId, gender)
+		else:
+			nParticles = int(sys.argv[6])
+			lastResult = run(nParticles, nSteps, basePath, inputFilePath[0]+'/'+inputFile, outputFilePath[0]+'/'+string.replace(inputFile, 'ply', ''), isTest, params, code, 0, frameId, gender, lastResult)
+		#print ' ****************************** '
+    		#print len(lastResult)
+		#print lastResult[0]['x'].shape
+		#print lastResult[0]['L'].shape
+		#print lastResult[0]['value'].shape
+
+		frameId +=1
+    		toc = time.time()
+
+    		print 'Execution time: ' + str(toc-tic)
 	
+    else:	
+	if len(sys.argv) == 6:
+		nParticles = int(sys.argv[5])
+		frames = 1
+        	inputFilePath[0] = sys.argv[2]
+ 		outputFilePath[0] = sys.argv[3]
+		isTest = False
+      		gender = sys.argv[4]
+        	basePath = sys.argv[1]
 
-    for frameId in range(0, frames):
-    	tic = time.time()
-	if not frameId:
-    		lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender)
-	else:
-		nParticles = 30
-		lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender, lastResult)
-	#print ' ****************************** '
-    	#print len(lastResult)
-	#print lastResult[0]['x'].shape
-	#print lastResult[0]['L'].shape
-	#print lastResult[0]['value'].shape
-    	toc = time.time()
+    	for frameId in range(0, frames):
+    		tic = time.time()
+		if not frameId:
+    			lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender)
+		else:
+			nParticles = 30
+			lastResult = run(nParticles, nSteps, basePath, inputFilePath[frameId], outputFilePath[frameId], isTest, params, code, 0, frameId, gender, lastResult)
+		#print ' ****************************** '
+    		#print len(lastResult)
+		#print lastResult[0]['x'].shape
+		#print lastResult[0]['L'].shape
+		#print lastResult[0]['value'].shape
+    		toc = time.time()
 
-    	print 'Execution time: ' + str(toc-tic)
+    		print 'Execution time: ' + str(toc-tic)
 
